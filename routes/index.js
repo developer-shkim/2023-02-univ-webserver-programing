@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
   // res.render('index', { title: '익스프레스', name: '홍길동' });
   
   // send: 전송
-  res.render('index', { title: '익스프레스', name: '홍길동' });
+  res.render('index', { title: '홈페이지', pageName: 'home.ejs'});
 });
 
 module.exports = router;

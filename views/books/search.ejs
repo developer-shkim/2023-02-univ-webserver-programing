@@ -1,0 +1,35 @@
+<div class="row my-5">
+    <div class="col">
+        <h1 class="text-center">도서검색</h1>
+    </div>
+    <div id="div_books"></div>
+</div>
+<script type="x-handlebars-template" id="temp_books">
+    <table class="table">
+        {{#each documents}}
+        <tr>
+            <td>{{title}}</td>
+            <td>{{ price }}</td>
+            <td>{{authors}}</td>
+        </tr>  
+        {{/each}}
+    </table>
+</script>
+<script>
+    getBooks();
+    function getBooks() {
+        $.ajax({
+            type: "get",
+            url: "https://dapi.kakao.com/v3/search/book?target=title",
+            headers: {
+                "Authorization": `KakaoAK 742f314b42ecbdffe4b2e2d6650d0c5a`
+            },
+            data: { query: "노드", page: 1, size: 5 },
+            success: function(data) {
+                console.log(data);
+                temp=Handlebars.compile($("#temp_books").html());
+                $("#div_books").html(temp(data));
+            }
+        })
+    }
+</script>
