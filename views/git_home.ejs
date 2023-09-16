@@ -1,14 +1,19 @@
-<!-- 시험 문제는 id 괄호넣기 방식으로 -->
+<style>
+    #div_books img {
+        cursor: pointer;
+    }
+</style>
 <div class="row my-5">
     <div class="col">
-        <div class="row mb-2 justify-content-end">
-            <form name="frm" class="col-6 col-md-4 col-lg-3"><!-- 일반, 미들, 라지 해상도 -->
+        <div class="row justify-content-end">
+            <form class="col-6 col-lg-3 col-md-4" name="frm">
                 <div class="input-group">
-                    <input name="query" class="form-control" value="자바">
+                    <input class="form-control" placeholder="검색어" name="query" value="웹서버">
                     <button class="btn btn-primary">검색</button>
                 </div>
             </form>
         </div>
+        <hr>
         <div id="div_books" class="row"></div>
         <div class="text-center mt-3" id="div_page">
             <button class="btn btn-primary" id="prev">이전</button>
@@ -17,21 +22,44 @@
         </div>
     </div>
 </div>
-<script type="x-handlebars-template" id="temp_books">
+
+<script id="temp_books" type="x-handlebars-template">
     {{#each documents}}
-        <div class="col-6 col-md-4 col-lg-2 mb-2">
+        <div class="col-6 col-md-4 col-lg-2 my-2">
             <div class="card">
                 <div class="card-body">
-                    <img src="{{thumbnail}}" width="100%">
-                    <div class="ellipsis text-center">{{ title }}</div>
+                    <img src="{{chk_thumbnail thumbnail}}" index="{{@index}}" width="90%">
+                    <div class="mt-2 ellipsis" style="font-size:0.8rem;">{{title}}</div>
+                </div>    
+                <div class="card-footer">
+                    <div style="font-size:0.8rem;">{{fmt_price price}}</div>
                 </div>
-            </div>
-        </div>
+            </div>    
+        </div>    
+        <%-include("./books/modal.ejs")%>     
     {{/each}}
+</script>
+<script>
+    Handlebars.registerHelper("chk_thumbnail", function(thumbnail){
+        if(!thumbnail) {
+            return "http://via.placeholder.com/120x170";
+        }else {
+            return thumbnail;
+        }
+    });
+
+    Handlebars.registerHelper("fmt_price", function(price){
+        if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
+    });
 </script>
 <script>
     let query=$(frm.query).val();
     let page=1;
+
+    $("#div_books").on("click", "img", function(){
+        let index=$(this).attr("index")
+        $("#modal" + index).modal("show");
+    });
 
     $(frm).on("submit", function(e){
         e.preventDefault();
@@ -45,30 +73,27 @@
         }
     });
 
-$("#next").on("click", function() {
-    page++;
+    $("#next").on("click", function(){
+        page++;
+        getList();    
+    });
+
+    $("#prev").on("click", function(){
+        page--;
+        getList();
+    });
+
     getList();
-})
-
-$("#prev").on("click", function() {
-    page--;
-    getList();
-})
-
-getList()
-
     function getList() {
         $.ajax({
             type:'get',
-            url:'https://dapi.kakao.com/v3/search/book',
-            headers:{Authorization: `KakaoAK 742f314b42ecbdffe4b2e2d6650d0c5a`},
-            data:{ query: query, page: page, size:6 },
+            url:'https://dapi.kakao.com/v3/search/book?target=title',
+            headers:{Authorization:"KakaoAK 4dc52ede9437e2cff0a338f1bd13b1c5"},
+            data:{ query:query, page:page, size:6 },
             dataType:'json',
             success:function(data){
-                console.log(data)
-                let temp=Handlebars.compile($("#temp_books").html());
+                temp=Handlebars.compile($("#temp_books").html());
                 $("#div_books").html(temp(data));
-                $("#span_page").html(page);
                 if(page==1) {
                     $("#prev").attr("disabled", true)
                 }else {
@@ -79,7 +104,7 @@ getList()
                 }else {
                     $("#next").attr("disabled", false);
                 }
-                let last=Math.ceil(data.meta.pageable_count/6);
+                let last=Math.ceil(data.meta.pageable_count/5);
                 if(data.meta.pageable_count>0){
                     $("#div_page").show();
                     $("#span_page").html(page + "/" + last);
