@@ -1,4 +1,9 @@
 <!-- 시험 문제는 id 괄호넣기 방식으로 -->
+<style>
+    #div_books img {
+        cursor:pointer;
+    }
+</style>
 <div class="row my-5">
     <div class="col">
         <div class="row mb-2 justify-content-end">
@@ -19,19 +24,41 @@
 </div>
 <script type="x-handlebars-template" id="temp_books">
     {{#each documents}}
-        <div class="col-6 col-md-4 col-lg-2 mb-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="{{thumbnail}}" width="100%">
-                    <div class="ellipsis text-center">{{ title }}</div>
-                </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+        <div class="card">
+            <div class="card-body">
+                <img src="{{chkImage thumbnail}}" width="100%" index="{{@index}}">
+                <div class="ellipsis text-center">{{ title }}</div>
+            </div>
+            <div class="card-footer">
+                <div style="font-size:0.8rem;">{{fmtPrice price}}</div>
             </div>
         </div>
+    </div>
+    <%-include("./books/modal.ejs")%>    
     {{/each}}
+</script>
+<script>
+    Handlebars.registerHelper("chkImage", function(thumbnail){
+        if(!thumbnail) {
+            return "http://via.placeholder.com/120x170";
+        }else {
+            return thumbnail;
+        }
+    });
+
+    Handlebars.registerHelper("fmtPrice", function(price){
+        if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
+    });
 </script>
 <script>
     let query=$(frm.query).val();
     let page=1;
+
+    $("#div_books").on("click", "img", function(){
+        let index=$(this).attr("index")
+        $("#modal" + index).modal("show");
+    });
 
     $(frm).on("submit", function(e){
         e.preventDefault();
