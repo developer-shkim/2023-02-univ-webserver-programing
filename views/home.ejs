@@ -3,6 +3,11 @@
     #div_books img {
         cursor:pointer;
     }
+    #div_books .card-footer .bi {
+        cursor: pointer;
+        color:green;
+    }
+
 </style>
 <div class="row my-5">
     <div class="col">
@@ -31,7 +36,11 @@
                 <div class="ellipsis text-center">{{ title }}</div>
             </div>
             <div class="card-footer">
-                <div style="font-size:0.8rem;">{{fmtPrice price}}</div>
+                <div>
+                    <span style="font-size:0.6rem;">{{fmtPrice price}}</span>
+                    <i class="bi bi-cart float-end" book="{{book @this}}"></i>
+                </div>
+
             </div>
         </div>
     </div>
@@ -50,10 +59,38 @@
     Handlebars.registerHelper("fmtPrice", function(price){
         if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
     });
+
+    Handlebars.registerHelper("book", function(book){
+        return JSON.stringify(book);
+    });
 </script>
-<script>
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getDatabase, set, ref, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    const db = getDatabase(app);
+
     let query=$(frm.query).val();
     let page=1;
+
+    $("#div_books").on("click", ".bi-cart", async function(){
+        const book= JSON.parse($(this).attr("book"));
+        if(sessionStorage.getItem("email")){
+            const uid=sessionStorage.getItem("uid");
+            const ref_book=ref(db,`cart/${uid}/${book.isbn}`);
+
+            const snapshot=await get(ref_book);
+            if(snapshot.val()){
+                alert("장바구니에 이미 존재하는 도서입니다!");
+            } else{
+                if(!confirm("장바구니에 저장하실래요?")) return;
+                await set(ref_book, book);
+                alert("장바구니에 등록되었습니다.");
+            }
+        }else{
+            location.href="/users/login";
+        }
+    });
+
 
     $("#div_books").on("click", "img", function(){
         let index=$(this).attr("index")

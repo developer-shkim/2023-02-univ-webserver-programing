@@ -28,11 +28,11 @@
         <div class="col-6 col-md-4 col-lg-2 my-2">
             <div class="card">
                 <div class="card-body">
-                    <img src="{{chk_thumbnail thumbnail}}" index="{{@index}}" width="90%">
+                    <img src="{{chkImage thumbnail}}" index="{{@index}}" width="90%">
                     <div class="mt-2 ellipsis" style="font-size:0.8rem;">{{title}}</div>
                 </div>    
                 <div class="card-footer">
-                    <div style="font-size:0.8rem;">{{fmt_price price}}</div>
+                    <div style="font-size:0.8rem;">{{fmtPrice price}}</div>
                 </div>
             </div>    
         </div>    
@@ -40,7 +40,7 @@
     {{/each}}
 </script>
 <script>
-    Handlebars.registerHelper("chk_thumbnail", function(thumbnail){
+    Handlebars.registerHelper("chkImage", function(thumbnail){
         if(!thumbnail) {
             return "http://via.placeholder.com/120x170";
         }else {
@@ -48,7 +48,7 @@
         }
     });
 
-    Handlebars.registerHelper("fmt_price", function(price){
+    Handlebars.registerHelper("fmtPrice", function(price){
         if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
     });
 </script>
