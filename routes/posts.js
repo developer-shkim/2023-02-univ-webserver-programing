@@ -8,7 +8,12 @@ router.get('/', function(req, res, next) {
   // res.render('index', { title: '익스프레스', name: '홍길동' });
   
   // send: 전송
-  res.render('posts', { title: '익스프레스', name: '홍길동' });
+  res.render('index', { title: '게시판', pageName: 'posts/list.ejs' });
 });
+
+//글쓰기
+router.get('/insert', function(req, res){
+  res.render('index', {title:'글쓰기', pageName:'posts/insert.ejs'});
+})
 
 module.exports = router;

@@ -44,7 +44,12 @@
                 console.log(success);
                 sessionStorage.setItem("email", email);
                 sessionStorage.setItem("uid", success.user.uid);
-                location.href="/";
+                if(sessionStorage.getItem("target")) {
+                    location.href=sessionStorage.getItem("target");
+                    sessionStorage.removeItem("target");
+                }else{
+                    location.href="/";
+                }
             }).catch(error=>{
                 alert(error.message);
             });
