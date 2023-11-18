@@ -5,21 +5,25 @@
         <div class="col text-end mb-5">
             <button id="btn-insert" class="btn btn-primary">글쓰기</button>
         </div>
-        <div>게시글수:<span id="total"></span></div>
+        <div>total: <span id="total"></span></div>
         <hr>
         <div id="div-posts"></div>
-        <div id="pagination" class="text-center">
+        <div id="pagination" class="pagination justify-content-center mt-5"></div>
+        <!-- <div id="pagination" class="text-center">
             <button id="btn-prev" class="btn btn-primary">이전</button>
             <span id="span-page" class="mx-3">1/10</span>
             <button id="btn-next" class="btn btn-primary">다음</button>
-        </div>
+        </div> -->
     </div>
 </div>
 <script id="temp-posts" type="x-handlebars-templates">
     <table class="table">
+        <th>제목</th>
+        <th>이메일</th>
+        <th>날짜</th>
     {{#each .}}
         <tr>
-            <td>{{title}}</td>
+            <td><a href="/posts/read?id={{id}}">{{title}}</a></td>
             <td>{{email}}</td>
             <td>{{date}}</td>
         </tr>    
@@ -35,46 +39,49 @@
 
     let page=1;
     let size=3;
-    let last=1;
+    let total=0;
+
 
     //게시글 목록
     getPosts();
     async function getPosts() {
+        let rows=[];
         const q = query(collection(db, 'posts'), orderBy("date", "desc"));
         const snapshot = await getDocs(q);
-        //console.log(snapshot.docs);
-        let rows=[];
-        let total=snapshot.docs.length;
-        last = Math.ceil(total/size);
-        $("#total").html(total);
+        
+        $("#total").html(snapshot.docs.length);
+
+        if (total != snapshot.docs.length) {
+            total = snapshot.docs.length;
+            const totalPages = Math.ceil(total/size);
+            $("#pagination").twbsPagination("changeTotalPages", totalPages, 1);
+        }
         
         await snapshot.docs.forEach(async(row, index)=>{
-            //console.log(row.id, row.data());
             const start = (page-1)*size;
             const end = (page*size)-1;
             if(index>=start && index<=end){
-                rows.push({id:row.id, ...row.data()});
+                rows.push({index: index+1, id:row.id, ...row.data()});
             }
         });
-        //console.log(rows);
         const temp=Handlebars.compile($("#temp-posts").html());
         $("#div-posts").html(temp(rows));
-        if(total > size) {
-            $("#span-page").html(`${page} / ${last}`);
-            $("#span-page").show();
-            if(page==1) {
-                $("#btn-prev").attr("disabled", true);
-            }else{
-                $("#btn-prev").attr("disabled", false);
-            }
-            if(page==last) {
-                $("#btn-next").attr("disabled", true);
-            }else{
-                $("#btn-next").attr("disabled", false);
-            } 
-        }else{
-            $("#pagination").hide();
-        }
+        // if(total > size) {
+        //     $("#span-page").html(`${page} / ${last}`);
+        //     $("#span-page").show();
+        //     if(page==1) {
+        //         $("#btn-prev").attr("disabled", true);
+        //     }else{
+        //         $("#btn-prev").attr("disabled", false);
+        //     }
+        //     if(page==last) {
+        //         $("#btn-next").attr("disabled", true);
+        //     }else{
+        //         $("#btn-next").attr("disabled", false);
+        //     } 
+        // }else{
+        //     $("#pagination").hide();
+        // }
     }
 
     $("#btn-insert").on("click", function(){
@@ -86,14 +93,42 @@
         }
     });
 
-    $("#btn-next").on("click", function(){
-        page++;
-        getPosts();
+    $('#pagination').twbsPagination({
+
+        totalPages:10, //총 페이지 번호 수
+
+        visiblePages: 5, // 하단에서 한 번에 보여 지는 페이지 번호 수
+
+        startPage : 1, // 시작 시 표시되는 현재 페이지
+
+        initiateStartPageClick: false, // 플러그인이 시작 시 페이지 버튼 클릭 여부 (default : true) 
+
+        first : '<<', // 페이지네이션 버튼 중 처음으로 돌아가는 버튼에 쓰여 있는 텍스트
+
+        prev : '<', // 이전 페이지 버튼에 쓰여 있는 텍스트
+
+        next : '>', // 다음 페이지 버튼에 쓰여 있는 텍스트
+
+        last : '>>', // 페이지네이션 버튼 중 마지막으로 가는 버튼에 쓰여 있는 텍스트
+
+        onPageClick: function (event, clickPage) {
+
+            page=clickPage; 
+
+            getPosts(); 
+
+        }
+
     });
 
+    // $("#btn-next").on("click", function(){
+    //     page++;
+    //     getPosts();
+    // });
+
     
-    $("#btn-prev").on("click", function(){
-        page--;
-        getPosts();
-    });
+    // $("#btn-prev").on("click", function(){
+    //     page--;
+    //     getPosts();
+    // });
 </script>
